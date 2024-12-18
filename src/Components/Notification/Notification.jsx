@@ -19,9 +19,10 @@ const Notification = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedEmail, setSelectedEmail] = useState(null); // Track selected email
   const [emailType, setEmailType] = useState("primary"); // Track email type (Primary or Updates)
+  const [emailsData, setEmailsData] = useState(emails); // Store emails in state
 
   // Filter emails based on the selected folder, type, and search term
-  const filteredEmails = emails.filter(
+  const filteredEmails = emailsData.filter(
     (email) =>
       email.type === emailType && // Only show emails based on the type
       (email.subject.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -40,11 +41,28 @@ const Notification = () => {
 
   const toggleReadStatus = (emailId) => {
     // Toggle the read/unread status of the email
-    const updatedEmails = emails.map((email) =>
+    const updatedEmails = emailsData.map((email) =>
       email.id === emailId ? { ...email, read: !email.read } : email
     );
-    // Update the emails state
-    setEmails(updatedEmails);
+    setEmailsData(updatedEmails);
+  };
+
+  const handleUpdateEmail = (emailId, updatedSubject, updatedContent) => {
+    const updatedEmails = emailsData.map((email) =>
+      email.id === emailId ? { ...email, subject: updatedSubject, content: updatedContent } : email
+    );
+    setEmailsData(updatedEmails); // Update the state with the modified email
+    setSelectedEmail(null); // Go back to the email list after update
+  };
+
+  const handleSendEmailToAdmin = (emailId) => {
+    const email = emailsData.find((email) => email.id === emailId);
+    if (email) {
+      // Simulating sending the email to the super admin
+      console.log(`Sending email to super admin: `, email);
+      // You can replace this with an actual API call to send the email
+      alert(`Email with subject "${email.subject}" sent to Super Admin.`);
+    }
   };
 
   return (
@@ -86,7 +104,7 @@ const Notification = () => {
                   type="text"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  placeholder="Search emails"
+                  placeholder="Search Here"
                   className="border px-4 py-2 rounded-lg w-96"
                 />
                 <IoSearch size={20} className="ml-2 text-gray-500" />
@@ -111,12 +129,17 @@ const Notification = () => {
 
             {/* Email List or Email Details */}
             {selectedEmail ? (
-              <EmailDetails email={selectedEmail} onBack={handleBackToList} />
+              <EmailDetails
+                email={selectedEmail}
+                onBack={handleBackToList}
+                onUpdateEmail={handleUpdateEmail} // Pass update handler
+                onSendEmail={handleSendEmailToAdmin} // Pass send email handler
+              />
             ) : (
               <EmailList
                 emails={filteredEmails}
                 onSelectEmail={handleSelectEmail}
-                toggleReadStatus={toggleReadStatus} // Pass toggleReadStatus to EmailList
+                toggleReadStatus={toggleReadStatus}
               />
             )}
           </div>
