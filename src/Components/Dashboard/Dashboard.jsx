@@ -100,24 +100,7 @@ const Dashboard = ({ approvedEntries }) => {
       <div>
       <div className=" p-6 ml-72">
       <h1 className="text-3xl font-bold  mb-6">Easy Diary Dashboard</h1>
-      {/* Approved Entries Table */}
-      <div className="mb-6">
-          <h2 className="text-2xl font-bold mb-4">Approved Entries</h2>
-          <table className="border-collapse table-auto border-2 w-full">
-            <thead>
-              <tr className="bg-gray-100">
-                <th className="border px-4 py-2">Subject Description</th>
-              </tr>
-            </thead>
-            <tbody>
-              {approvedEntries.map((entry, index) => (
-                <tr key={index} className="border-b">
-                  <td className="border px-4 py-2">{entry.subjectDescription}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+      
       <div className="grid grid-cols-4 gap-6">
         {/* Card 1 */}
         <div className="bg-blue-500 text-white p-6 rounded-lg shadow-md">

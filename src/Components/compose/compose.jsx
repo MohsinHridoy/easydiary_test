@@ -173,7 +173,8 @@ const ComposePage = () => {
               />
             </div>
             <div className="dropdown w-1/3">
-                <div tabIndex={0} role="button" className="btn m-1">শাখা</div>
+            <label className="block text-sm font-medium mb-2">শাখা:</label>
+                <div tabIndex={0} role="button" className="btn m-1">Select</div>
                 <ul tabIndex={0} className="dropdown-content menu bg-base-100 rounded-box z-[1] w-52 p-2 shadow">
                   <li><a>১</a></li>
                   <li><a>২</a></li>
@@ -200,7 +201,8 @@ const ComposePage = () => {
             />
             </div>
             <div className="dropdown w-1/3">
-                <div tabIndex={0} role="button" className="btn m-1">শাখা</div>
+            <label className="block text-sm font-medium mb-2">শাখা:</label>
+                <div tabIndex={0} role="button" className="btn m-1">Select</div>
                 <ul tabIndex={0} className="dropdown-content menu bg-base-100 rounded-box z-[1] w-52 p-2 shadow">
                   <li><a>১</a></li>
                   <li><a>২</a></li>

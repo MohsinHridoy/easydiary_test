@@ -1,7 +1,7 @@
 import { StrictMode, useState } from "react";
 import { createRoot } from "react-dom/client";
-import "./index.css";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import "./index.css";
 import Root from "./Components/Root/Root";
 import ErrorPage from "./Components/ErrorPage/ErrorPage";
 import LogIn from "./Components/Home/LogIn";
@@ -9,14 +9,13 @@ import Registration from "./Components/Registration/Registration";
 import Dashboard from "./Components/Dashboard/Dashboard";
 import ForgotPassword from "./ForgotPassword/ForgotPassword";
 import ComposePage from "./Components/compose/compose";
+import Notification from "./Components/Notification/Notification";
 import AuthProvider from "./providers/AuthProvider";
 import { EntryProvider } from "./Components/EntryContext/EntryContext";
-import "./i18n/i18n";
-import AdminPanel from "./AdminPanel/AdminPanel";
-import Notification from "./Components/Notification/Notification";
+import EmailManager from "./Components/EmailManager/EmailManager";
 
 const App = () => {
-  // State for entries (approved, pending, and rejected)
+  // State for entries
   const [approvedEntries, setApprovedEntries] = useState([]);
   const [pendingEntries, setPendingEntries] = useState([]);
   const [rejectedEntries, setRejectedEntries] = useState([]);
@@ -25,26 +24,17 @@ const App = () => {
   const router = createBrowserRouter([
     {
       path: "/",
-      element: <Root></Root>,
-      errorElement: <ErrorPage></ErrorPage>,
+      element: <Root />,
+      errorElement: <ErrorPage />,
       children: [
+        { path: "/", element: <LogIn /> },
+        { path: "/registration", element: <Registration /> },
+        { path: "/notification", element: <Notification /> },
+        { path: "/dashboard", element: <Dashboard approvedEntries={approvedEntries} /> },
+        { path: "/forgot-password", element: <ForgotPassword /> },
         {
-          path: "/", element: <LogIn></LogIn>,
-        },
-        {
-          path: "/registration", element: <Registration></Registration>,
-        },
-        {
-          path: "/notification", element: <Notification></Notification>,
-        },
-        {
-          path: "/dashboard", element: <Dashboard approvedEntries={approvedEntries} />,
-        },
-        {
-          path: "/forgot-password",element: <ForgotPassword></ForgotPassword>,
-        },
-        {
-          path: "/compose",element: (
+          path: "/compose",
+          element: (
             <ComposePage
               onSubmit={(formData) =>
                 setPendingEntries([...pendingEntries, formData])
@@ -52,21 +42,25 @@ const App = () => {
             />
           ),
         },
+        // {
+        //   path: "/admin",
+        //   element: (
+        //     <AdminPanel
+        //       pendingEntries={pendingEntries}
+        //       onApprove={(entry) => {
+        //         setApprovedEntries([...approvedEntries, entry]);
+        //         setPendingEntries(pendingEntries.filter((e) => e !== entry));
+        //       }}
+        //       onReject={(entry) => {
+        //         setRejectedEntries([...rejectedEntries, entry]);
+        //         setPendingEntries(pendingEntries.filter((e) => e !== entry));
+        //       }}
+        //     />
+        //   ),
+        // },
         {
-          path: "/admin",
-          element: (
-            <AdminPanel
-              pendingEntries={pendingEntries}
-              onApprove={(entry) => {
-                setApprovedEntries([...approvedEntries, entry]);
-                setPendingEntries(pendingEntries.filter((e) => e !== entry));
-              }}
-              onReject={(entry) => {
-                setRejectedEntries([...rejectedEntries, entry]);
-                setPendingEntries(pendingEntries.filter((e) => e !== entry));
-              }}
-            />
-          ),
+          path: "/emails",
+          element: <EmailManager />,
         },
       ],
     },
