@@ -54,7 +54,7 @@ const Registration = () => {
 
   return (
     <div className="hero bg-base-200 min-h-screen">
-      <div className="hero-content flex-col lg:flex-row justify-around gap-20">
+      <div className="hero-content flex-col lg:flex-row justify-around gap-10">
         <div className="flex items-center">
           <img
             src={logo1}
@@ -68,7 +68,7 @@ const Registration = () => {
 
         <div>
           {/* Right Section */}
-          <div className="flex flex-col items-center space-y-6">
+          <div className="flex flex-col items-center space-y-3">
             <img
               src={logo2}
               alt="Easy Diary Logo"
@@ -77,58 +77,116 @@ const Registration = () => {
             <h2 className="text-xl font-bold text-green-700">Create New Account</h2>
 
             {/* Form */}
-            <form onSubmit={handleSubmit(onSubmit)} className="w-64 space-y-4">
-              {/* Name */}
-              <label>
-                Please enter your name
-                <input
-                  type="text"
-                  {...register("name", { required: "Name is required" })}
-                  placeholder="Username"
-                  className="w-full px-4 py-2 border-2 border-green-700  focus:outline-none my-1"
-                />
-                {errors.name && <p className="text-red-600">{errors.name.message}</p>}
-              </label>
+            < form onSubmit={handleSubmit(onSubmit)} className=" w-[550px] space-y-4" >
+              <div className="flex gap-4 ">
+                <div>
+                  {/* Name */}
+                  <label>
+                     Enter your name
+                    <input
+                      type="text"
+                      {...register("name", { required: "Name is required" })}
+                      placeholder="Username"
+                      className="w-full px-4 py-2 border-2 border-green-700  focus:outline-none my-1"
+                    />
+                    {errors.name && <p className="text-red-600">{errors.name.message}</p>}
+                  </label>
+                </div>
+                <div>
+                  {/* Email */}
+                  <label>
+                     Enter your Email
+                    <input
+                      type="email"
+                      {...register("email", {
+                        required: "Email is required",
+                        pattern: {
+                          value: /^\S+@\S+$/i,
+                          message: "Invalid email address",
+                        },
+                      })}
+                      placeholder="Email"
+                      className="w-full px-4 py-2 border-2 border-green-700  focus:outline-none my-1"
+                    />
+                    {errors.email && <p className="text-red-600">{errors.email.message}</p>}
+                  </label>
+                </div>
+              </div>
+              <div className="flex gap-4">
+                <div>
+                   {/* Designation */}
+                   <label>
+                     Enter your Designation
+                    <input
+                      type="text"
+                      {...register("name", { required: "Name is required" })}
+                      placeholder="Designation"
+                      className="w-full px-4 py-2 border-2 border-green-700  focus:outline-none my-1"
+                    />
+                    {errors.name && <p className="text-red-600">{errors.name.message}</p>}
+                  </label>
+                </div>
+                <div>
+                  {/* Branch */}
+                  <label>
+                     Enter your Branch number
+                   
+                      <select name="Branch" id="Branch" className="border-2 border-green-700 m-auto my-1">
+                        <option value="b1">1 </option>
+                        <option value="b2">2</option>
+                        <option value="b3">3</option>
+                        <option value="b4">4</option>
+                      </select>
+                    {errors.name && <p className="text-red-600">{errors.name.message}</p>}
+                  </label>
+                </div>
+              </div>
+              <div className="flex gap-4">
+                <div>
+                  {/* Password */}
+                  <label>
+                     Enter your password
+                    <input
+                      type="password"
+                      {...register("password", {
+                        required: "Password is required",
+                        minLength: {
+                          value: 6,
+                          message: "Password must be at least 6 characters",
+                        },
+                      })}
+                      placeholder="Password"
+                      className="w-full px-4 py-2 border-2 border-green-700  focus:outline-none my-1"
+                    />
+                    {errors.password && <p className="text-red-600">{errors.password.message}</p>}
+                  </label>
+                </div>
+                <div>
+                  {/* Confimr Password */}
+                  <label>
+                      Confirm your password
+                    <input
+                      type="password"
+                      {...register("  password", {
+                        required: "Password is required",
+                        minLength: {
+                          value: 6,
+                          message: "Password must be at least 6 characters",
+                        },
+                      })}
+                      placeholder=" Confirm Password"
+                      className="w-full px-4 py-2 border-2 border-green-700  focus:outline-none my-1"
+                    />
+                    {errors.password && <p className="text-red-600">{errors.password.message}</p>}
+                  </label>
+                </div>
+              </div>
+              
 
-              {/* Email */}
-              <label>
-                Please enter your Email
-                <input
-                  type="email"
-                  {...register("email", {
-                    required: "Email is required",
-                    pattern: {
-                      value: /^\S+@\S+$/i,
-                      message: "Invalid email address",
-                    },
-                  })}
-                  placeholder="Email"
-                  className="w-full px-4 py-2 border-2 border-green-700  focus:outline-none my-1"
-                />
-                {errors.email && <p className="text-red-600">{errors.email.message}</p>}
-              </label>
-
-              {/* Password */}
-              <label>
-                Please enter your password
-                <input
-                  type="password"
-                  {...register("password", {
-                    required: "Password is required",
-                    minLength: {
-                      value: 6,
-                      message: "Password must be at least 6 characters",
-                    },
-                  })}
-                  placeholder="Password"
-                  className="w-full px-4 py-2 border-2 border-green-700  focus:outline-none my-1"
-                />
-                {errors.password && <p className="text-red-600">{errors.password.message}</p>}
-              </label>
 
               {/* Date of Birth */}
               <label>
-                Please enter your date of birth
+                 Enter your date of birth
                 <input
                   type="date"
                   {...register("calender", { required: "Date of birth is required" })}
