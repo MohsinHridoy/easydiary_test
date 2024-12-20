@@ -1,23 +1,23 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useEntries } from '../EntryContext/EntryContext';
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useEntries } from "../EntryContext/EntryContext";
 
 const ComposePage = () => {
   const [formData, setFormData] = useState({
-    subjectDescription: '',
-    advisorDepartment: '',
-    seniorSecretaryDepartment: '',
-    additionalSecretaryLawSubsection: '',
-    jointSecretaryLawBranch: '',
-    additionalSecretaryDisciplineSubsection: '',
-    jointSecretaryDisciplineBranch: '',
-    lawSections: '',
-    disciplineSections: '',
-    recommendationComments: '',
-    diaryNumber: '',
-    internalDepartment: '',
-    externalDepartment: '',
-    signatureSeal: ''
+    subjectDescription: "",
+    advisorDepartment: "",
+    seniorSecretaryDepartment: "",
+    additionalSecretaryLawSubsection: "",
+    jointSecretaryLawBranch: "",
+    additionalSecretaryDisciplineSubsection: "",
+    jointSecretaryDisciplineBranch: "",
+    lawSections: "",
+    disciplineSections: "",
+    recommendationComments: "",
+    diaryNumber: "",
+    internalDepartment: "",
+    externalDepartment: "",
+    signatureSeal: "",
   });
 
   const navigate = useNavigate();
@@ -45,24 +45,24 @@ const ComposePage = () => {
 
     // Reset form data
     setFormData({
-      subjectDescription: '',
-      advisorDepartment: '',
-      seniorSecretaryDepartment: '',
-      additionalSecretaryLawSubsection: '',
-      jointSecretaryLawBranch: '',
-      additionalSecretaryDisciplineSubsection: '',
-      jointSecretaryDisciplineBranch: '',
-      lawSections: '',
-      disciplineSections: '',
-      recommendationComments: '',
-      diaryNumber: '',
-      internalDepartment: '',
-      externalDepartment: '',
-      signatureSeal: ''
+      subjectDescription: "",
+      advisorDepartment: "",
+      seniorSecretaryDepartment: "",
+      additionalSecretaryLawSubsection: "",
+      jointSecretaryLawBranch: "",
+      additionalSecretaryDisciplineSubsection: "",
+      jointSecretaryDisciplineBranch: "",
+      lawSections: "",
+      disciplineSections: "",
+      recommendationComments: "",
+      diaryNumber: "",
+      internalDepartment: "",
+      externalDepartment: "",
+      signatureSeal: "",
     });
 
     // Navigate to the dashboard
-    navigate('/dashboard');
+    navigate("/dashboard");
   };
 
   return (
@@ -72,7 +72,9 @@ const ComposePage = () => {
         {/* Row 1: Subject Description and Advisor Department */}
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium mb-2">বিষয়/বিবরণ:</label>
+            <label className="block text-sm font-medium mb-2">
+              বিষয়/বিবরণ:
+            </label>
             <input
               type="text"
               name="subjectDescription"
@@ -83,7 +85,9 @@ const ComposePage = () => {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium mb-2">উপদেষ্টার দপ্তর:</label>
+            <label className="block text-sm font-medium mb-2">
+              উপদেষ্টার দপ্তর:
+            </label>
             <input
               type="text"
               name="advisorDepartment"
@@ -98,7 +102,9 @@ const ComposePage = () => {
         {/* Row 2: Senior Secretary Department and Additional Secretary Law Subsection */}
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium mb-2">সিনিয়র সচিবের দপ্তর:</label>
+            <label className="block text-sm font-medium mb-2">
+              সিনিয়র সচিবের দপ্তর:
+            </label>
             <input
               type="text"
               name="seniorSecretaryDepartment"
@@ -109,7 +115,9 @@ const ComposePage = () => {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium mb-2">অতিঃ সচিব (আইন) অনুবিভাগ:</label>
+            <label className="block text-sm font-medium mb-2">
+              অতিঃ সচিব (আইন) অনুবিভাগ:
+            </label>
             <input
               type="text"
               name="additionalSecretaryLawSubsection"
@@ -124,7 +132,9 @@ const ComposePage = () => {
         {/* Row 3: Joint Secretary Law Branch and Additional Secretary Discipline Subsection */}
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium mb-2">যুগ্ন সচিব (আইন) অধিশাখা:</label>
+            <label className="block text-sm font-medium mb-2">
+              যুগ্ন সচিব (আইন) অধিশাখা:
+            </label>
             <input
               type="text"
               name="jointSecretaryLawBranch"
@@ -135,7 +145,9 @@ const ComposePage = () => {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium mb-2">অতিঃ সচিব (শৃংখলা) অনুবিভাগ:</label>
+            <label className="block text-sm font-medium mb-2">
+              অতিঃ সচিব (শৃংখলা) অনুবিভাগ:
+            </label>
             <input
               type="text"
               name="additionalSecretaryDisciplineSubsection"
@@ -150,7 +162,9 @@ const ComposePage = () => {
         {/* Row 4: Joint Secretary Discipline Branch and Law Sections */}
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium mb-2">যুগ্ন সচিব (শৃংখলা) অধিশাখা:</label>
+            <label className="block text-sm font-medium mb-2">
+              যুগ্ন সচিব (শৃংখলা) অধিশাখা:
+            </label>
             <input
               type="text"
               name="jointSecretaryDisciplineBranch"
@@ -160,9 +174,11 @@ const ComposePage = () => {
               placeholder="যুগ্ন সচিব (শৃংখলা) অধিশাখা লিখুন"
             />
           </div>
-          <div className='flex gap-4 items-center justify-center'>
-            <div className='w-2/3'>
-              <label className="block text-sm font-medium mb-2">আইন শাখা:</label>
+          <div className="flex gap-4 items-center justify-center">
+            <div className="w-2/3">
+              <label className="block text-sm font-medium mb-2">
+                আইন শাখা:
+              </label>
               <input
                 type="text"
                 name="lawSections"
@@ -172,48 +188,57 @@ const ComposePage = () => {
                 placeholder="আইন শাখা লিখুন"
               />
             </div>
-            <div className="dropdown w-1/3">
+            <div className="w-1/3">
             <label className="block text-sm font-medium mb-2">শাখা:</label>
-                <div tabIndex={0} role="button" className="btn m-1">Select</div>
-                <ul tabIndex={0} className="dropdown-content menu bg-base-100 rounded-box z-[1] w-52 p-2 shadow">
-                  <li><a>১</a></li>
-                  <li><a>২</a></li>
-                  <li><a>৩</a></li>
-                  <li><a>৪</a></li>
-                  
-                </ul>
-              </div>
+            <select className="select select-bordered">
+              <option disabled selected>
+                Select
+              </option>
+              <option>1</option>
+              <option>2</option>
+              <option>3</option>
+              <option>4</option>
+              <option>5</option>
+            </select>
+            </div>
           </div>
         </div>
 
         {/* Row 5: Discipline Sections and Recommendation / Comments */}
         <div className="grid grid-cols-2 gap-4">
-          <div className='flex gap-4 items-center justify-center '>
-            <div className='w-2/3'>
-            <label className="block text-sm font-medium mb-2">শৃংখলা শাখা:</label>
-            <input
-              type="text"
-              name="disciplineSections"
-              value={formData.disciplineSections}
-              onChange={handleChange}
-              className="w-full px-4 py-3 border border-gray-300 rounded-md"
-              placeholder="শৃংখলা শাখা লিখুন"
-            />
+          <div className="flex gap-4 items-center justify-center ">
+            <div className="w-2/3">
+              <label className="block text-sm font-medium mb-2">
+                শৃংখলা শাখা:
+              </label>
+              <input
+                type="text"
+                name="disciplineSections"
+                value={formData.disciplineSections}
+                onChange={handleChange}
+                className="w-full px-4 py-3 border border-gray-300 rounded-md"
+                placeholder="শৃংখলা শাখা লিখুন"
+              />
             </div>
-            <div className="dropdown w-1/3">
+            <div className="w-1/3">
             <label className="block text-sm font-medium mb-2">শাখা:</label>
-                <div tabIndex={0} role="button" className="btn m-1">Select</div>
-                <ul tabIndex={0} className="dropdown-content menu bg-base-100 rounded-box z-[1] w-52 p-2 shadow">
-                  <li><a>১</a></li>
-                  <li><a>২</a></li>
-                  <li><a>৩</a></li>
-                  <li><a>৪</a></li>
-                  
-                </ul>
-              </div>
+            <select className="select select-bordered">
+              <option disabled selected>
+                Select
+              </option>
+              <option>1</option>
+              <option>2</option>
+              <option>3</option>
+              <option>4</option>
+              <option>5</option>
+            </select>
+            </div>
+            
           </div>
           <div>
-            <label className="block text-sm font-medium mb-2">সুপারিশ/মন্তব্য:</label>
+            <label className="block text-sm font-medium mb-2">
+              সুপারিশ/মন্তব্য:
+            </label>
             <textarea
               name="recommendationComments"
               value={formData.recommendationComments}
@@ -238,7 +263,9 @@ const ComposePage = () => {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium mb-2">বিবিধ/অভ্যন্তরীণ দপ্তর:</label>
+            <label className="block text-sm font-medium mb-2">
+              বিবিধ/অভ্যন্তরীণ দপ্তর:
+            </label>
             <input
               type="text"
               name="internalDepartment"
@@ -253,7 +280,9 @@ const ComposePage = () => {
         {/* Row 7: External Department and Signature Seal */}
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium mb-2">বিবিধ/বহিস্থ দপ্তর:</label>
+            <label className="block text-sm font-medium mb-2">
+              বিবিধ/বহিস্থ দপ্তর:
+            </label>
             <input
               type="text"
               name="externalDepartment"
@@ -264,7 +293,9 @@ const ComposePage = () => {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium mb-2">স্বাক্ষর/সীল:</label>
+            <label className="block text-sm font-medium mb-2">
+              স্বাক্ষর/সীল:
+            </label>
             <input
               type="text"
               name="signatureSeal"

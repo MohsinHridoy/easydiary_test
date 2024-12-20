@@ -1,40 +1,15 @@
-import React, { useState, useEffect } from "react";
-import { Redirect } from "react-router-dom";
+import React, { useContext } from "react";
+import { Navigate } from "react-router-dom";
+import { AuthContext } from "../providers/AuthProvider";
 
 const ProtectedRoute = ({ children }) => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const token = localStorage.getItem('token'); // Get token from localStorage
-    if (token) {
-      fetch('http://localhost:3000/dashboard', {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      })
-        .then(response => {
-          if (response.ok) {
-            setIsAuthenticated(true); // Token is valid, user is authenticated
-          } else {
-            setIsAuthenticated(false); // Invalid token
-          }
-        })
-        .catch(() => {
-          setIsAuthenticated(false); // Error occurred, user not authenticated
-        })
-        .finally(() => setLoading(false)); // End loading
-    } else {
-      setIsAuthenticated(false); // No token found
-      setLoading(false);
-    }
-  }, []);
+  const { user, loading } = useContext(AuthContext);
 
   if (loading) {
-    return <p>Loading...</p>; // Show loading message while checking auth
+    return <p>Loading...</p>; // Show a loader while checking auth
   }
 
-  return isAuthenticated ? children : <Redirect to="/login" />; // Redirect to login if not authenticated
+  return user ? children : <Navigate to="/" replace />;
 };
 
 export default ProtectedRoute;

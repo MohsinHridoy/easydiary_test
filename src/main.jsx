@@ -1,4 +1,4 @@
-import { StrictMode, useState } from "react";
+import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import "./index.css";
@@ -13,14 +13,9 @@ import Notification from "./Components/Notification/Notification";
 import AuthProvider from "./providers/AuthProvider";
 import { EntryProvider } from "./Components/EntryContext/EntryContext";
 import EmailManager from "./Components/EmailManager/EmailManager";
+import ProtectedRoute from "./ProtectedRoute/ProtectedRoute";
 
 const App = () => {
-  // State for entries
-  const [approvedEntries, setApprovedEntries] = useState([]);
-  const [pendingEntries, setPendingEntries] = useState([]);
-  const [rejectedEntries, setRejectedEntries] = useState([]);
-
-  // Define the router
   const router = createBrowserRouter([
     {
       path: "/",
@@ -29,38 +24,40 @@ const App = () => {
       children: [
         { path: "/", element: <LogIn /> },
         { path: "/registration", element: <Registration /> },
-        { path: "/notification", element: <Notification /> },
-        { path: "/dashboard", element: <Dashboard approvedEntries={approvedEntries} /> },
         { path: "/forgot-password", element: <ForgotPassword /> },
+
+        // Secure Routes
+        {
+          path: "/dashboard",
+          element: (
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          ),
+        },
         {
           path: "/compose",
           element: (
-            <ComposePage
-              onSubmit={(formData) =>
-                setPendingEntries([...pendingEntries, formData])
-              }
-            />
+            <ProtectedRoute>
+              <ComposePage />
+            </ProtectedRoute>
           ),
         },
-        // {
-        //   path: "/admin",
-        //   element: (
-        //     <AdminPanel
-        //       pendingEntries={pendingEntries}
-        //       onApprove={(entry) => {
-        //         setApprovedEntries([...approvedEntries, entry]);
-        //         setPendingEntries(pendingEntries.filter((e) => e !== entry));
-        //       }}
-        //       onReject={(entry) => {
-        //         setRejectedEntries([...rejectedEntries, entry]);
-        //         setPendingEntries(pendingEntries.filter((e) => e !== entry));
-        //       }}
-        //     />
-        //   ),
-        // },
+        {
+          path: "/notification",
+          element: (
+            <ProtectedRoute>
+              <Notification />
+            </ProtectedRoute>
+          ),
+        },
         {
           path: "/emails",
-          element: <EmailManager />,
+          element: (
+            <ProtectedRoute>
+              <EmailManager />
+            </ProtectedRoute>
+          ),
         },
       ],
     },
@@ -77,5 +74,4 @@ const App = () => {
   );
 };
 
-// Render the app
 createRoot(document.getElementById("root")).render(<App />);
