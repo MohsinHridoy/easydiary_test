@@ -36,7 +36,12 @@ const resources = {
         "internalDepartment": "Internal Department",
         "externalDepartment": "External Department",
         "signatureSeal": "Signature/Seal",
+        "Send": "Send",
+        "Accepted": "Accepted",
+        "Unresolved": "Unresolved",
+        "Completed": "Completed",
         "action": "Action",
+        "Easy Diary Dashboard": "Easy Diary Dashboard",
       }
     },
     bn: {
@@ -72,7 +77,12 @@ const resources = {
         "internalDepartment": "বিবিধ/অভ্যন্তরীণ দপ্তর",
         "externalDepartment": "বিবিধ/বহিস্থ দপ্তর",
         "signatureSeal": "স্বাক্ষর/সীল",
+        "Send": "প্রেরিত",
+        "Accepted": "গৃহীত",
+        "Unresolved": "অমীমাংসিত",
+        "Completed": "সম্পন্ন",
         "action": "অ্যাকশন",
+        "Easy Diary Dashboard": "সহজ ডায়েরি ড্যাশবোর্ড",
       }
     }
   };

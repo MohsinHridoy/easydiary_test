@@ -99,7 +99,7 @@ const Dashboard = ({ approvedEntries }) => {
     <Navbar />
       <div>
       <div className=" p-6 ml-72">
-      <h1 className="text-3xl font-bold  mb-6">Easy Diary Dashboard</h1>
+      <h1 className="text-3xl font-bold  mb-6">{t("Easy Diary Dashboard")}</h1>
       
       <div className="grid grid-cols-4 gap-6">
         {/* Card 1 */}
@@ -108,7 +108,8 @@ const Dashboard = ({ approvedEntries }) => {
             <i className="fas fa-paper-plane text-3xl"></i>
             <span className="text-xl">40</span>
           </div>
-          <p className="mt-2 text-center">প্রেরিত</p>
+          <p className="mt-2 text-center font-bold">{t("Send")}</p>
+          
         </div>
 
         {/* Card 2 */}
@@ -117,7 +118,7 @@ const Dashboard = ({ approvedEntries }) => {
             <i className="fas fa-arrow-down text-3xl"></i>
             <span className="text-xl">120</span>
           </div>
-          <p className="mt-2 text-center">গৃহীত</p>
+          <p className="mt-2 text-center font-bold">{t("Accepted")}</p>
         </div>
 
         {/* Card 3 */}
@@ -126,7 +127,7 @@ const Dashboard = ({ approvedEntries }) => {
             <i className="fas fa-camera text-3xl"></i>
             <span className="text-xl">30</span>
           </div>
-          <p className="mt-2 text-center">অমীমাংসিত</p>
+          <p className="mt-2 text-center font-bold">{t("Unresolved")}</p>
         </div>
 
         {/* Card 4 */}
@@ -135,7 +136,7 @@ const Dashboard = ({ approvedEntries }) => {
             <i className="fas fa-check-circle text-3xl"></i>
             <span className="text-xl">11</span>
           </div>
-          <p className="mt-2 text-center">সম্পন্ন</p>
+          <p className="mt-2 text-center font-bold">{t("Completed")}</p>
         </div>
       </div>
     </div>

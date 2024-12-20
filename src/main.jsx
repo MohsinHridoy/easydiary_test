@@ -14,6 +14,8 @@ import AuthProvider from "./providers/AuthProvider";
 import { EntryProvider } from "./Components/EntryContext/EntryContext";
 import EmailManager from "./Components/EmailManager/EmailManager";
 import ProtectedRoute from "./ProtectedRoute/ProtectedRoute";
+import "./i18n/i18n";
+
 
 const App = () => {
   const router = createBrowserRouter([
