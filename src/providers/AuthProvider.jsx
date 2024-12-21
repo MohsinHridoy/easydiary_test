@@ -31,15 +31,26 @@ const AuthProvider = ({ children }) => {
     try {
       setLoading(true);
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      setUser(userCredential.user);
-      Swal.fire("Signup successful", "Welcome aboard!", "success");
+  
+      // ডিবাগিং জন্য লগ
+      console.log('User Credential:', userCredential);
+  
+      // যদি userCredential এবং user থাকে, তবে সেটি ইউজার স্টেটে সেট করা হবে
+      if (userCredential && userCredential.user) {
+        setUser(userCredential.user);
+        Swal.fire("Signup successful", "Welcome aboard!", "success");
+      } else {
+        throw new Error("User registration failed. No user information returned.");
+      }
     } catch (error) {
+      console.error("Signup failed:", error.message); // ত্রুটি লগ করা
       Swal.fire("Signup failed", error.message, "error");
       throw error;
     } finally {
       setLoading(false);
     }
   };
+  
 
   const signIn = async (email, password) => {
     try {

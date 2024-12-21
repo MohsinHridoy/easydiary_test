@@ -4,8 +4,12 @@ import Sidebar from "../Navbar/Sidebar";
 import Navbar from "../Navbar/Navbar";
 import { useTranslation } from "react-i18next";
 import * as XLSX from 'xlsx'; // Import xlsx library
+import { useLocation } from "react-router-dom";
 
-const Dashboard = ({ approvedEntries }) => {
+const Dashboard = () => {
+  const location = useLocation();
+  const { name, email, designation, branch } = location.state || {};
+
   const { t } = useTranslation();
   const { entries, updateEntry, deleteEntry } = useEntries();
   const [editingIndex, setEditingIndex] = useState(null);
@@ -100,13 +104,14 @@ const Dashboard = ({ approvedEntries }) => {
       <div>
       <div className=" p-6 ml-72">
       <h1 className="text-3xl font-bold  mb-6">{t("Easy Diary Dashboard")}</h1>
+      <h1 className="text-3xl font-bold  mb-6">{name && <p><strong>Name:</strong> {name}</p>}</h1>
       
       <div className="grid grid-cols-4 gap-6">
         {/* Card 1 */}
         <div className="bg-blue-500 text-white p-6 rounded-lg shadow-md">
           <div className="flex items-center justify-between">
             <i className="fas fa-paper-plane text-3xl"></i>
-            <span className="text-xl">40</span>
+            <span className="text-xl">40 </span>
           </div>
           <p className="mt-2 text-center font-bold">{t("Send")}</p>
           

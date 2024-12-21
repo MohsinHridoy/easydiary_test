@@ -10,6 +10,7 @@ const Registration = () => {
   const { createUser } = useContext(AuthContext); // Correct context usage
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate(); // Initialize useNavigate
+  const [showBranch, setShowBranch] = useState(false); // New state for branch visibility
 
   const {
     register,
@@ -17,38 +18,50 @@ const Registration = () => {
     formState: { errors },
   } = useForm();
 
+  const handleDesignationChange = (e) => {
+    const selectedValue = e.target.value;
+    setShowBranch(selectedValue === "Low Branch" || selectedValue === "Discipline Branch");
+  };
+
   const onSubmit = (data) => {
     console.log(data);
-    setLoading(true); // Set loading state during registration
-
+    setLoading(true);
+  
     createUser(data.email, data.password)
       .then((result) => {
-        const loggedUser = result.user;
-        console.log("User registered:", loggedUser);
-
-        // Show success message
-        Swal.fire({
-          icon: "success",
-          title: "Registration Successful",
-          text: "You have successfully created your account!",
-        });
-
-        setLoading(false); // Clear loading after success
-
-        // Redirect to dashboard
-        navigate("/dashboard"); // Replace "/dashboard" with your desired route
+        if (result && result.user) { // user প্রপার্টি চেক করুন
+          const loggedUser = result.user;
+          console.log("User registered:", loggedUser);
+  
+          Swal.fire({
+            icon: "success",
+            title: "Registration Successful",
+            text: "You have successfully created your account!",
+          });
+  
+          setLoading(false);
+          navigate("/dashboard", {
+            state: {
+              name: data.name,
+              email: data.email,
+              designation: data.designation,
+              branch: data.branch
+            }
+          });
+        } else {
+          throw new Error("User registration failed. No user information returned.");
+        }
       })
       .catch((error) => {
         console.error("Registration failed:", error.message);
-
-        // Show error message
+  
         Swal.fire({
           icon: "error",
           title: "Registration Failed",
           text: error.message,
         });
-
-        setLoading(false); // Clear loading after failure
+  
+        setLoading(false);
       });
   };
 
@@ -112,35 +125,47 @@ const Registration = () => {
                   </label>
                 </div>
               </div>
+
               <div className="flex gap-4">
                 <div>
-                   {/* Designation */}
-                   <label>
-                     Enter your Designation
-                    <input
-                      type="text"
-                      {...register("name", { required: "Name is required" })}
-                      placeholder="Designation"
-                      className="w-full px-4 py-2 border-2 border-green-700  focus:outline-none my-1"
-                    />
-                    {errors.name && <p className="text-red-600">{errors.name.message}</p>}
+                  <label>
+                    Enter your Designation
+                    <select
+                      {...register("designation", { required: "Designation is required" })}
+                      onChange={handleDesignationChange}
+                      className="w-full px-4 py-2 border-2 border-green-700 focus:outline-none my-1"
+                    >
+                      <option value="">Select Designation</option>
+                      <option value="Join Secretary">Join Secretary</option>
+                      <option value="Low Branch">Low Branch</option>
+                      <option value="Discipline Branch">Discipline Branch</option>
+                    </select>
+                    {errors.designation && <p className="text-red-600">{errors.designation.message}</p>}
                   </label>
                 </div>
-                <div>
-                  {/* Branch */}
+                <div
+                  className={`transition-opacity duration-300 ${
+                    showBranch ? "opacity-100" : "opacity-0 pointer-events-none"
+                  }`}
+                >
                   <label>
-                     Enter your Branch number
-                   
-                      <select name="Branch" id="Branch" className="border-2 border-green-700 m-auto my-1">
-                        <option value="b1">1 </option>
-                        <option value="b2">2</option>
-                        <option value="b3">3</option>
-                        <option value="b4">4</option>
-                      </select>
-                    {errors.name && <p className="text-red-600">{errors.name.message}</p>}
+                    Enter your Branch number
+                    <select
+                      {...register("branch", { required: showBranch })}
+                      className="w-full px-4 py-2 border-2 border-green-700 focus:outline-none my-1"
+                    >
+                      <option value="">Select Branch</option>
+                      <option value="1">1</option>
+                      <option value="2">2</option>
+                      <option value="3">3</option>
+                      <option value="4">4</option>
+                    </select>
+                    {errors.branch && <p className="text-red-600">{errors.branch.message}</p>}
                   </label>
                 </div>
               </div>
+
+              
               <div className="flex gap-4">
                 <div>
                   {/* Password */}
