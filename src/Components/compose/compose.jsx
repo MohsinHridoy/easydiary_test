@@ -1,323 +1,422 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { useEntries } from "../EntryContext/EntryContext";
-
+// ComposePage.jsx
+import React, { useState } from 'react';
+import { supabase } from '../../firebase/supabaseClient'; // Import Supabase client
+import { useNavigate } from 'react-router-dom'; // Import useNavigate for navigation
+import Sidebar from "../Navbar/Sidebar";
+import Navbar from "../Navbar/Navbar";
 const ComposePage = () => {
   const [formData, setFormData] = useState({
-    subjectDescription: "",
-    advisorDepartment: "",
-    seniorSecretaryDepartment: "",
-    additionalSecretaryLawSubsection: "",
-    jointSecretaryLawBranch: "",
-    additionalSecretaryDisciplineSubsection: "",
-    jointSecretaryDisciplineBranch: "",
-    lawSections: "",
-    disciplineSections: "",
-    recommendationComments: "",
-    diaryNumber: "",
-    internalDepartment: "",
-    externalDepartment: "",
-    signatureSeal: "",
+    bishoyBiboron: '',
+    upodeshtarDepto: '',
+    seniorSecretaryDepto: '',
+    atikSecretaryLaw: '',
+    additonalSecretaryLaw: '',
+    jnSecretaryLaw: '',
+    adhiShakha: '',
+    atikSecretaryDiscipline: '',
+    anuVibhagDiscipline: '',
+    jnSecretaryDiscipline: '',
+    adhiShakhaDiscipline: '',
+    lawShakha: '',
+    disciplineShakha: '',
+
+    lawShakhaNumber: '', // New key for dropdown
+    disciplineShakhaNumber: '', // New key for dropdown
+
+
+    suparishComment: '',
+    diaryNo: '',
+    bibid: '',
+    internalDepto: '',
+    externalDepto: '',
+    signatureSeal: ''
   });
 
-  const navigate = useNavigate();
-  const { addEntry } = useEntries();
+  const [showModal, setShowModal] = useState(false); // For showing/hiding the modal
+  const [modalMessage, setModalMessage] = useState(""); // To store the message for the modal
+  const navigate = useNavigate(); // Initialize navigate function from react-router-dom
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prevData) => ({
-      ...prevData,
-      [name]: value,
-    }));
+    setFormData({ ...formData, [name]: value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Form validation to ensure all required fields are filled
-    if (!formData.subjectDescription || !formData.advisorDepartment) {
-      alert("কিছু ফিল্ড খালি রয়েছে, দয়া করে সমস্ত তথ্য পূর্ণ করুন।");
-      return;
+    // Log the form data for debugging
+    console.log("Form Data:", formData);
+
+    try {
+      // Save data to Supabase
+      const { data, error } = await supabase
+        .from('compose') // Replace with your Supabase table name
+        .insert([
+          {
+            bishoy_biboron: formData.bishoyBiboron,
+            upodeshtar_depto: formData.upodeshtarDepto,
+            senior_secretary_depto: formData.seniorSecretaryDepto,
+
+            atik_secretary_law: formData.atikSecretaryLaw,
+            anu_vibhag: formData.additonalSecretaryLaw,
+
+
+
+
+            atik_secretary_discipline: formData.atikSecretaryDiscipline,
+            anu_vibhag_discipline: formData.anuVibhagDiscipline,
+            // jn_secretary_discipline: formData.jnSecretaryDiscipline,
+            // adhi_shakha_discipline: formData.adhiShakhaDiscipline,
+
+
+            law_shakha: formData.lawShakha,
+            discipline_shakha: formData.disciplineShakha,
+
+
+            law_shakha_number: formData.lawShakhaNumber ? parseInt(formData.lawShakhaNumber, 10) : null,
+            discipline_shakha_number: formData.disciplineShakhaNumber ? parseInt(formData.disciplineShakhaNumber, 10) : null,
+
+
+            suparish_comment: formData.suparishComment,
+            diary_no: formData.diaryNo,
+            internal_depto: formData.internalDepto,
+            external_depto: formData.externalDepto,
+            signature_seal: formData.signatureSeal
+          }
+        ]);
+
+      if (error) {
+        // Log detailed error response for debugging
+        console.error('Error saving data to Supabase:', error);
+        setModalMessage(`Failed to submit form. Error: ${error.message}`);
+      } else {
+        console.log('Form submitted and data saved:', data);
+        setModalMessage('Form submitted successfully!');
+      }
+
+      setShowModal(true); // Show modal on form submit
+    } catch (err) {
+      console.error("Unexpected error during submission:", err);
+      setModalMessage('Failed to submit form. Please try again.');
+      setShowModal(true); // Show modal even in case of unexpected error
     }
+  };
 
-    // Add the entry and clear the form
-    addEntry(formData);
-
-    // Reset form data
-    setFormData({
-      subjectDescription: "",
-      advisorDepartment: "",
-      seniorSecretaryDepartment: "",
-      additionalSecretaryLawSubsection: "",
-      jointSecretaryLawBranch: "",
-      additionalSecretaryDisciplineSubsection: "",
-      jointSecretaryDisciplineBranch: "",
-      lawSections: "",
-      disciplineSections: "",
-      recommendationComments: "",
-      diaryNumber: "",
-      internalDepartment: "",
-      externalDepartment: "",
-      signatureSeal: "",
-    });
-
-    // Navigate to the dashboard
-    navigate("/dashboard");
+  const handleModalClose = () => {
+    if (modalMessage === 'Form submitted successfully!') {
+      navigate('/dashboard'); // Redirect to dashboard if success
+    }
+    setShowModal(false); // Close the modal
   };
 
   return (
-    <div className="max-w-3xl mx-auto p-6">
-      <h1 className="text-2xl font-bold mb-6 text-center">এন্ট্রি তৈরি করুন</h1>
-      <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Row 1: Subject Description and Advisor Department */}
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium mb-2">
-              বিষয়/বিবরণ:
-            </label>
+    <>
+  <Sidebar />
+  <Navbar pageTitle="ডায়রি" /> {/* Passing the title here */}
+  <div style={{ padding: '20px', backgroundColor: '#f4f4f9' }}>
+      {/* <h1 style={{ textAlign: 'center', color: '#333', fontWeight: 'bold', fontSize: '2.5rem' }}>
+        ডায়রি
+      </h1> */}
+      <form onSubmit={handleSubmit} style={{ maxWidth: '600px', margin: '0 auto' }}>
+
+
+
+        <div style={{ marginBottom: '10px' }}>
+          <label>বিষয় / বিবরণ:</label>
+          <input
+            type="text"
+            name="bishoyBiboron"
+            value={formData.bishoyBiboron}
+            onChange={handleChange}
+            required
+
+            style={{ width: '100%', padding: '8px', marginTop: '5px' }}
+          />
+        </div>
+
+
+
+
+
+
+        <div style={{ display: 'flex', gap: '20px', marginBottom: '10px' }}>
+          <div style={{ flex: 1 }}>
+            <label>উপদেষ্টার দপ্তর:</label>
             <input
               type="text"
-              name="subjectDescription"
-              value={formData.subjectDescription}
+              name="upodeshtarDepto"
+              value={formData.upodeshtarDepto}
               onChange={handleChange}
-              className="w-full px-4 py-3 border border-gray-300 rounded-md"
-              placeholder="বিষয় বা বিবরণ লিখুন"
+
+              style={{ width: '100%', padding: '8px', marginTop: '5px' }}
             />
           </div>
-          <div>
-            <label className="block text-sm font-medium mb-2">
-              উপদেষ্টার দপ্তর:
-            </label>
+
+          <div style={{ flex: 1 }}>
+            <label>সিনিয়র সচিবের দপ্তর:</label>
             <input
               type="text"
-              name="advisorDepartment"
-              value={formData.advisorDepartment}
+              name="seniorSecretaryDepto"
+              value={formData.seniorSecretaryDepto}
               onChange={handleChange}
-              className="w-full px-4 py-3 border border-gray-300 rounded-md"
-              placeholder="উপদেষ্টার দপ্তর লিখুন"
+
+              style={{ width: '100%', padding: '8px', marginTop: '5px' }}
             />
           </div>
         </div>
 
-        {/* Row 2: Senior Secretary Department and Additional Secretary Law Subsection */}
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium mb-2">
-              সিনিয়র সচিবের দপ্তর:
-            </label>
+
+        <div style={{ display: 'flex', gap: '20px', marginBottom: '10px' }}>
+          <div style={{ flex: 1 }}>
+            <label>অতিঃ সচিব (আইন) অনুবিভাগ:</label>
             <input
               type="text"
-              name="seniorSecretaryDepartment"
-              value={formData.seniorSecretaryDepartment}
+              name="atikSecretaryLaw"
+              value={formData.atikSecretaryLaw}
               onChange={handleChange}
-              className="w-full px-4 py-3 border border-gray-300 rounded-md"
-              placeholder="সিনিয়র সচিবের দপ্তর লিখুন"
+
+              style={{ width: '100%', padding: '8px', marginTop: '5px' }}
             />
           </div>
-          <div>
-            <label className="block text-sm font-medium mb-2">
-              অতিঃ সচিব (আইন) অনুবিভাগ:
-            </label>
+
+          <div style={{ flex: 1 }}>
+            <label>যুগ্ন সচিব (আইন) অধিশাখা:</label>
             <input
               type="text"
-              name="additionalSecretaryLawSubsection"
-              value={formData.additionalSecretaryLawSubsection}
+              name="additonalSecretaryLaw"
+              value={formData.additonalSecretaryLaw}
               onChange={handleChange}
-              className="w-full px-4 py-3 border border-gray-300 rounded-md"
-              placeholder="অতিঃ সচিব (আইন) অনুবিভাগ লিখুন"
+
+              style={{ width: '100%', padding: '8px', marginTop: '5px' }}
             />
           </div>
         </div>
 
-        {/* Row 3: Joint Secretary Law Branch and Additional Secretary Discipline Subsection */}
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium mb-2">
-              যুগ্ন সচিব (আইন) অধিশাখা:
-            </label>
+
+        <div style={{ display: 'flex', gap: '20px', marginBottom: '10px' }}>
+          <div style={{ flex: 1 }}>
+            <label>অতিঃ সচিব (শৃংখলা) অনুবিভাগ:</label>
             <input
               type="text"
-              name="jointSecretaryLawBranch"
-              value={formData.jointSecretaryLawBranch}
+              name="atikSecretaryDiscipline"
+              value={formData.atikSecretaryDiscipline}
               onChange={handleChange}
-              className="w-full px-4 py-3 border border-gray-300 rounded-md"
-              placeholder="যুগ্ন সচিব (আইন) অধিশাখা লিখুন"
+              style={{ width: '100%', padding: '8px', marginTop: '5px' }}
             />
           </div>
-          <div>
-            <label className="block text-sm font-medium mb-2">
-              অতিঃ সচিব (শৃংখলা) অনুবিভাগ:
-            </label>
+
+          <div style={{ flex: 1 }}>
+            <label>যুগ্ন সচিব (শৃংখলা) অধিশাখা:</label>
             <input
               type="text"
-              name="additionalSecretaryDisciplineSubsection"
-              value={formData.additionalSecretaryDisciplineSubsection}
+              name="anuVibhagDiscipline"
+              value={formData.anuVibhagDiscipline}
               onChange={handleChange}
-              className="w-full px-4 py-3 border border-gray-300 rounded-md"
-              placeholder="অতিঃ সচিব (শৃংখলা) অনুবিভাগ লিখুন"
+
+              style={{ width: '100%', padding: '8px', marginTop: '5px' }}
             />
           </div>
         </div>
 
-        {/* Row 4: Joint Secretary Discipline Branch and Law Sections */}
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium mb-2">
-              যুগ্ন সচিব (শৃংখলা) অধিশাখা:
-            </label>
-            <input
-              type="text"
-              name="jointSecretaryDisciplineBranch"
-              value={formData.jointSecretaryDisciplineBranch}
-              onChange={handleChange}
-              className="w-full px-4 py-3 border border-gray-300 rounded-md"
-              placeholder="যুগ্ন সচিব (শৃংখলা) অধিশাখা লিখুন"
-            />
-          </div>
-          <div className="flex gap-4 items-center justify-center">
-            <div className="w-2/3">
-              <label className="block text-sm font-medium mb-2">
-                আইন শাখা:
-              </label>
+
+
+        <div style={{ display: 'flex', gap: '20px', marginBottom: '10px' }}>
+          {/* <div style={{ flex: 1 }}>
+    <label>আইন শাখা:</label>
+    <input
+      type="text"
+      name="lawShakha"
+      value={formData.lawShakha}
+      onChange={handleChange}
+      
+      style={{ width: '100%', padding: '8px', marginTop: '5px' }}
+    />
+  </div> */}
+
+          <div style={{ flex: 1 }}>
+            <label>আইন শাখা:</label>
+            <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
               <input
                 type="text"
-                name="lawSections"
-                value={formData.lawSections}
+                name="lawShakha"
+                value={formData.lawShakha}
                 onChange={handleChange}
-                className="w-full px-4 py-3 border border-gray-300 rounded-md"
-                placeholder="আইন শাখা লিখুন"
+                style={{ flex: 2, padding: '8px', marginTop: '5px' }}
               />
-            </div>
-            <div className="w-1/3">
-            <label className="block text-sm font-medium mb-2">শাখা:</label>
-            <select className="select select-bordered">
-              <option disabled selected>
-                Select
-              </option>
-              <option>1</option>
-              <option>2</option>
-              <option>3</option>
-              <option>4</option>
-              <option>5</option>
-            </select>
+              <select
+                name="lawShakhaNumber"
+                value={formData.lawShakhaNumber || ""}
+                onChange={handleChange}
+                style={{ flex: 1, padding: '8px', marginTop: '5px' }}
+              >
+                <option value="" disabled>নির্বাচন</option>
+                <option value="1">১</option>
+                <option value="2">২</option>
+                <option value="3">৩</option>
+                <option value="4">৪</option>
+              </select>
             </div>
           </div>
-        </div>
 
-        {/* Row 5: Discipline Sections and Recommendation / Comments */}
-        <div className="grid grid-cols-2 gap-4">
-          <div className="flex gap-4 items-center justify-center ">
-            <div className="w-2/3">
-              <label className="block text-sm font-medium mb-2">
-                শৃংখলা শাখা:
-              </label>
+
+          <div style={{ flex: 1 }}>
+            <label>শৃংখলা শাখা:</label>
+            <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
               <input
                 type="text"
-                name="disciplineSections"
-                value={formData.disciplineSections}
+                name="disciplineShakha"
+                value={formData.disciplineShakha}
                 onChange={handleChange}
-                className="w-full px-4 py-3 border border-gray-300 rounded-md"
-                placeholder="শৃংখলা শাখা লিখুন"
+                style={{ flex: 2, padding: '8px', marginTop: '5px' }}
               />
+              <select
+                name="disciplineShakhaNumber"
+                value={formData.disciplineShakhaNumber || ""}
+                onChange={handleChange}
+                style={{ flex: 1, padding: '8px', marginTop: '5px' }}
+              >
+                <option value="" disabled>নির্বাচন</option>
+                <option value="1">১</option>
+                <option value="2">২</option>
+                <option value="3">৩</option>
+                <option value="4">৪</option>
+              </select>
             </div>
-            <div className="w-1/3">
-            <label className="block text-sm font-medium mb-2">শাখা:</label>
-            <select className="select select-bordered">
-              <option disabled selected>
-                Select
-              </option>
-              <option>1</option>
-              <option>2</option>
-              <option>3</option>
-              <option>4</option>
-              <option>5</option>
-            </select>
-            </div>
-            
           </div>
-          <div>
-            <label className="block text-sm font-medium mb-2">
-              সুপারিশ/মন্তব্য:
-            </label>
-            <textarea
-              name="recommendationComments"
-              value={formData.recommendationComments}
+        </div>
+
+        <div style={{ marginBottom: '10px' }}>
+          <label>সুপারিশ/মন্তব্য:</label>
+          <textarea
+            name="suparishComment"
+            value={formData.suparishComment}
+            onChange={handleChange}
+
+            style={{ width: '100%', padding: '8px', marginTop: '5px' }}
+          />
+        </div>
+
+        <div style={{ marginBottom: '10px' }}>
+          <label>ডায়েরি নং:</label>
+          <input
+            type="text"
+            name="diaryNo"
+            value={formData.diaryNo}
+            onChange={handleChange}
+
+            style={{ width: '100%', padding: '8px', marginTop: '5px' }}
+          />
+        </div>
+
+        {/* <div style={{ marginBottom: '10px' }}>
+          <label>বিবিধ:</label>
+          <input
+            type="text"
+            name="bibid"
+            value={formData.bibid}
+            onChange={handleChange}
+            required
+            style={{ width: '100%', padding: '8px', marginTop: '5px' }}
+          />
+        </div> */}
+
+        <div style={{ display: 'flex', gap: '20px', marginBottom: '10px' }}>
+          <div style={{ flex: 1 }}>
+            <label>বিবিধ/অভ্যন্তরীণ দপ্তর:</label>
+            <input
+              type="text"
+              name="internalDepto"
+              value={formData.internalDepto}
               onChange={handleChange}
-              className="w-full px-4 py-3 border border-gray-300 rounded-md"
-              placeholder="সুপারিশ বা মন্তব্য লিখুন"
+
+              style={{ width: '100%', padding: '8px', marginTop: '5px' }}
+            />
+          </div>
+
+          <div style={{ flex: 1 }}>
+            <label>বিবিধ/বহিস্থ দপ্তর:</label>
+            <input
+              type="text"
+              name="externalDepto"
+              value={formData.externalDepto}
+              onChange={handleChange}
+
+              style={{ width: '100%', padding: '8px', marginTop: '5px' }}
             />
           </div>
         </div>
 
-        {/* Row 6: Diary Number and Internal Department */}
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium mb-2">ডায়েরি নং:</label>
-            <input
-              type="text"
-              name="diaryNumber"
-              value={formData.diaryNumber}
-              onChange={handleChange}
-              className="w-full px-4 py-3 border border-gray-300 rounded-md"
-              placeholder="ডায়েরি নং লিখুন"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-2">
-              বিবিধ/অভ্যন্তরীণ দপ্তর:
-            </label>
-            <input
-              type="text"
-              name="internalDepartment"
-              value={formData.internalDepartment}
-              onChange={handleChange}
-              className="w-full px-4 py-3 border border-gray-300 rounded-md"
-              placeholder="বিবিধ/অভ্যন্তরীণ দপ্তর লিখুন"
-            />
-          </div>
+        <div style={{ marginBottom: '10px' }}>
+          <label>স্বাক্ষর/সীল:</label>
+          <input
+            type="text"
+            name="signatureSeal"
+            value={formData.signatureSeal}
+            onChange={handleChange}
+            required
+            style={{ width: '100%', padding: '8px', marginTop: '5px' }}
+          />
         </div>
 
-        {/* Row 7: External Department and Signature Seal */}
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium mb-2">
-              বিবিধ/বহিস্থ দপ্তর:
-            </label>
-            <input
-              type="text"
-              name="externalDepartment"
-              value={formData.externalDepartment}
-              onChange={handleChange}
-              className="w-full px-4 py-3 border border-gray-300 rounded-md"
-              placeholder="বিবিধ/বহিস্থ দপ্তর লিখুন"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-2">
-              স্বাক্ষর/সীল:
-            </label>
-            <input
-              type="text"
-              name="signatureSeal"
-              value={formData.signatureSeal}
-              onChange={handleChange}
-              className="w-full px-4 py-3 border border-gray-300 rounded-md"
-              placeholder="স্বাক্ষর বা সীল লিখুন"
-            />
-          </div>
-        </div>
+        <button
+          type="submit"
+          style={{
+            padding: '10px 20px',
+            backgroundColor: '#4CAF50',
+            color: 'white',
+            border: 'none',
+            borderRadius: '5px',
+            cursor: 'pointer',
+            width: '100%'
+          }}
+        >
+          Submit
+        </button>
 
-        {/* Submit Button */}
-        <div>
-          <button
-            type="submit"
-            className="w-full py-3 bg-green-500 text-white rounded-md hover:bg-green-600"
-          >
-            এন্ট্রি তৈরি করুন
-          </button>
-        </div>
       </form>
+      {/* Modal */}
+
+      {showModal && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center'
+        }}>
+          <div style={{
+            backgroundColor: 'white',
+            padding: '20px',
+            borderRadius: '5px',
+            width: '300px',
+            textAlign: 'center'
+          }}>
+            <p>{modalMessage}</p>
+            <button
+              onClick={handleModalClose}
+              style={{
+                padding: '10px 20px',
+                backgroundColor: '#4CAF50',
+                color: 'white',
+                border: 'none',
+                borderRadius: '5px',
+                cursor: 'pointer'
+              }}
+            >
+              OK
+            </button>
+          </div>
+        </div>
+      )}
+
+
     </div>
+    </>
+
   );
 };
 

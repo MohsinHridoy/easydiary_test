@@ -1,4 +1,7 @@
 import { createContext, useEffect, useState } from "react";
+import { doc, setDoc, getDoc } from "firebase/firestore"; // Import Firestore methods
+import { db } from "../firebase/firebase.config"; // Firestore instance
+import { app } from "../firebase/firebase.config";
 import {
   createUserWithEmailAndPassword,
   getAuth,
@@ -6,7 +9,6 @@ import {
   signOut,
   onAuthStateChanged,
 } from "firebase/auth";
-import { app } from "../firebase/firebase.config";
 import Swal from "sweetalert2";
 
 export const AuthContext = createContext(null);
@@ -20,46 +22,86 @@ const AuthProvider = ({ children }) => {
   useEffect(() => {
     // Listen for auth state changes
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
+      if (currentUser) {
+        // Fetch user data from Firestore
+        const userDocRef = doc(db, "users", currentUser.uid);
+        getDoc(userDocRef)
+          .then((userDocSnapshot) => {
+            if (userDocSnapshot.exists()) {
+              const userData = userDocSnapshot.data();
+              // Update the user state with both auth and firestore data
+              setUser({
+                ...currentUser, // Include the auth-related info (email, UID, etc.)
+                ...userData,    // Include the additional data from Firestore (name, designation, etc.)
+              });
+            } else {
+              // If no data exists in Firestore, set user as authenticated with minimal data
+              setUser({ ...currentUser, missingData: true });
+            }
+          })
+          .catch((error) => {
+            console.error("Error fetching user data from Firestore: ", error);
+            setUser({ ...currentUser, missingData: true });
+          });
+      } else {
+        setUser(null); // If user is not authenticated, clear the user state
+      }
       setLoading(false);
     });
 
-    return () => unsubscribe(); // Clean up on unmount
+    return () => unsubscribe(); // Cleanup the listener when the component unmounts
   }, []);
 
-  const createUser = async (email, password) => {
+  const createUser = async (email, password, additionalData) => {
+    setLoading(true);
     try {
-      setLoading(true);
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-  
-      // ডিবাগিং জন্য লগ
-      console.log('User Credential:', userCredential);
-  
-      // যদি userCredential এবং user থাকে, তবে সেটি ইউজার স্টেটে সেট করা হবে
-      if (userCredential && userCredential.user) {
-        setUser(userCredential.user);
-        Swal.fire("Signup successful", "Welcome aboard!", "success");
-      } else {
-        throw new Error("User registration failed. No user information returned.");
-      }
+      const userDocRef = doc(db, "users", userCredential.user.uid);
+
+      // Save user data (email + additionalData) in Firestore
+      await setDoc(userDocRef, {
+        email,
+        ...additionalData,
+        createdAt: new Date().toISOString(),
+      });
+
+      // Set the user state after successful creation
+      setUser({ ...userCredential.user, ...additionalData });
+
+      return userCredential;
     } catch (error) {
-      console.error("Signup failed:", error.message); // ত্রুটি লগ করা
-      Swal.fire("Signup failed", error.message, "error");
+      console.error("Signup failed:", error.message);
       throw error;
     } finally {
       setLoading(false);
     }
   };
-  
 
   const signIn = async (email, password) => {
+    setLoading(true);
     try {
-      setLoading(true);
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      setUser(userCredential.user);
-      Swal.fire("Login successful", "Welcome back!", "success");
-      return userCredential.user;
+      const userId = userCredential.user.uid;
+
+      // Fetch additional user data from Firestore
+      const userDocRef = doc(db, "users", userId);
+      const userDocSnapshot = await getDoc(userDocRef);
+
+      if (userDocSnapshot.exists()) {
+        const userData = userDocSnapshot.data();
+
+        // Set the user state with both auth and firestore data
+        setUser({
+          email: userCredential.user.email,
+          ...userData, // Add the user data from Firestore (name, designation, etc.)
+        });
+
+        return { user: userCredential.user, userData };
+      } else {
+        throw new Error("No additional user data found.");
+      }
     } catch (error) {
+      console.error("Login failed:", error.message);
       Swal.fire("Login failed", error.message, "error");
       throw error;
     } finally {
@@ -71,7 +113,7 @@ const AuthProvider = ({ children }) => {
     try {
       setLoading(true);
       await signOut(auth);
-      setUser(null);
+      setUser(null); // Clear user state
       Swal.fire("Logged out", "See you again soon!", "success");
     } catch (error) {
       Swal.fire("Logout failed", error.message, "error");

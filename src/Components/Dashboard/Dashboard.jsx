@@ -1,35 +1,94 @@
-import React, { useState } from "react";
-import { useEntries } from "../EntryContext/EntryContext";
+import { useContext, useEffect, useState } from "react";
+import { AuthContext } from "../../providers/AuthProvider";
+import { useNavigate } from "react-router-dom";
+import Swal from "sweetalert2";
 import Sidebar from "../Navbar/Sidebar";
+import Card from "../Card/Card"; // Assuming Card component is used for individual metrics
+import { IoIosSend } from "react-icons/io";
+import { MdCallReceived, MdOutlinePendingActions } from "react-icons/md";
+import { GrCompliance } from "react-icons/gr";
+import { supabase } from "../../firebase/supabaseClient"; // Import Supabase client
+import { jsPDF } from "jspdf"; // Import jsPDF
+import "jspdf-autotable"; // Import for table support in jsPDF
 import Navbar from "../Navbar/Navbar";
-import { useTranslation } from "react-i18next";
-import * as XLSX from 'xlsx'; // Import xlsx library
-import { useLocation } from "react-router-dom";
+
+const placeholderImage = "/path/to/local-placeholder.jpg";
+
+// Your base64 encoded font string
+const NotoSansBengaliBase64 = "../../fonts/NotoSansBengali-Regular.ttf"; // Replace this with your actual base64 string
 
 const Dashboard = () => {
-  const location = useLocation();
-  const { name, email, designation, branch } = location.state || {};
-
-  const { t } = useTranslation();
-  const { entries, updateEntry, deleteEntry } = useEntries();
-  const [editingIndex, setEditingIndex] = useState(null);
-  const [editData, setEditData] = useState({
-    subjectDescription: "",
-    advisorDepartment: "",
-    seniorSecretaryDepartment: "",
-    additionalSecretaryLawSubsection: "",
-    jointSecretaryLawBranch: "",
-    additionalSecretaryDisciplineSubsection: "",
-    jointSecretaryDisciplineBranch: "",
-    lawSections: "",
-    disciplineSections: "",
-    recommendationComments: "",
-    diaryNumber: "",
-    internalDepartment: "",
-    externalDepartment: "",
-    signatureSeal: "",
+  const { user, logOut } = useContext(AuthContext);
+  const navigate = useNavigate();
+  const [userData, setUserData] = useState({
+    name: "Guest User",
+    email: "",
+    photo: placeholderImage,
   });
+  const [data, setData] = useState([]);
+  const [filteredData, setFilteredData] = useState([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [editingIndex, setEditingIndex] = useState(null);
 
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [currentItem, setCurrentItem] = useState(null);
+  const handleEdit = (item) => {
+    console.log("Navigating to compose with item:", item);
+    navigate("/compose", { state: { formData: item } });
+  };
+
+  const userLawShakha = user?.designation === "Low Branch" ? user?.branch : null;
+  const userDisciplineShakha = user?.designation === "Discipline Branch" ? user?.branch : null;
+  const isJointSecretary = user?.designation === "Join Secretary";
+
+  const handleSave = async () => {
+    if (isEditing) {
+      await updateItem(currentItem.id, { name: newItem });
+      setIsEditing(false);
+      setCurrentItem(null);
+    } else {
+      await createItem({ name: newItem });
+    }
+    fetchItems();
+    setNewItem('');
+  };
+      
+  // Fetch data from Supabase compose table
+  useEffect(() => {
+    if (user) {
+      setUserData({
+        name: user.displayName || "Guest User",
+        email: user.email,
+        photo: user.photoURL || placeholderImage,
+      });
+    } else {
+      // Swal.fire({
+      //   icon: "warning",
+      //   title: "Unauthorized",
+      //   text: "Please log in to access the dashboard.",
+      //   showConfirmButton: true,
+      // });
+      // navigate("/"); // Redirect to login if no user
+    }
+
+    const fetchData = async () => {
+      try {
+        const { data: fetchedData, error } = await supabase.from("compose").select("*");
+        if (error) throw new Error(error.message);
+
+        setData(fetchedData);
+        setFilteredData(fetchedData); // Initialize the filteredData to match data
+      } catch (err) {
+        setError("Failed to fetch data");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [user, navigate]);
   const handleEditChange = (e) => {
     const { name, value } = e.target;
     setEditData((prevData) => ({
@@ -66,207 +125,345 @@ const Dashboard = () => {
       signatureSeal: "",
     });
   };
- // Function to download table data as Excel
- const downloadExcel = () => {
-  // Convert entries to a format that Excel can understand
-  const wsData = entries.map(entry => ({
-    "#": entries.indexOf(entry) + 1,
-    "বিষয়/বিবরণ": entry.subjectDescription,
-    "উপদেষ্টার দপ্তর": entry.advisorDepartment,
-    "সিনিয়র সচিবের দপ্তর": entry.seniorSecretaryDepartment,
-    "অতিঃ সচিব (আইন) অনুবিভাগ": entry.additionalSecretaryLawSubsection,
-    "যুগ্ন সচিব (আইন) অধিশাখা": entry.jointSecretaryLawBranch,
-    "অতিঃ সচিব (শৃংখলা) অনুবিভাগ": entry.additionalSecretaryDisciplineSubsection,
-    "যুগ্ন সচিব (শৃংখলা) অধিশাখা": entry.jointSecretaryDisciplineBranch,
-    "আইন শাখা": entry.lawSections,
-    "শৃংখলা শাখা": entry.disciplineSections,
-    "সুপারিশ/মন্তব্য": entry.recommendationComments,
-    "ডায়েরি নং": entry.diaryNumber,
-    "বিবিধ/অভ্যন্তরীণ দপ্তর": entry.internalDepartment,
-    "বিবিধ/বহিস্থ দপ্তর": entry.externalDepartment,
-    "স্বাক্ষর/সীল": entry.signatureSeal,
-  }));
+  const convertToBengaliNumber = (num) => {
+    const bengaliDigits = ["০", "১", "২", "৩", "৪", "৫", "৬", "৭", "৮", "৯"];
+    return num.toString().split("").map(digit => bengaliDigits[parseInt(digit)]).join("");
+  };
 
-  // Create a worksheet from the data
-  const ws = XLSX.utils.json_to_sheet(wsData);
 
-  // Create a new workbook and append the worksheet
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, "Entries");
 
-  // Save the Excel file
-  XLSX.writeFile(wb, "entries.xlsx");
-};
+  // Log out handler
+  const handleLogOut = () => {
+    logOut()
+      .then(() => {
+        Swal.fire({
+          icon: "success",
+          title: "Logged Out",
+          text: "You have successfully logged out.",
+          showConfirmButton: false,
+          timer: 1500,
+        });
+        navigate("/"); // Redirect after successful logout
+      })
+      .catch((error) => {
+        console.error("Logout Error:", error.message);
+        Swal.fire({
+          icon: "error",
+          title: "Logout Failed",
+          text: error.message,
+        });
+      });
+  };
+
+
+  // Delete item handler
+  // Handle search input change
+  const handleSearch = (event) => {
+    const query = event.target.value.toLowerCase();
+    setSearchQuery(query);
+
+    if (query === "") {
+      setFilteredData(data); // Reset filter when search is empty
+    } else {
+      const filtered = data.filter((item) =>
+        Object.values(item).some((val) =>
+          String(val || "").toLowerCase().includes(query)
+        )
+      );
+      setFilteredData(filtered);
+    }
+  };
+
+  // Handle delete action
+  const handleDelete = async (id) => {
+    try {
+      const { error } = await supabase.from("compose").delete().match({ id });
+      if (error) throw new Error(error.message);
+
+      // Update both data and filteredData states to reflect changes
+      const updatedData = data.filter((item) => item.id !== id);
+      setData(updatedData);
+
+      // Re-apply the current search query to updated data
+      const updatedFilteredData = updatedData.filter((item) =>
+        Object.values(item).some((val) =>
+          String(val || "").toLowerCase().includes(searchQuery)
+        )
+      );
+      setFilteredData(updatedFilteredData);
+    } catch (err) {
+      console.error("Error deleting item:", err.message);
+    }
+  };
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  if (error) {
+    return <div>Error: {error}</div>;
+  }
+
+
+
+
+  // PDF download handler with custom Bengali font
+
+  const handleDownloadPDF = () => {
+    const doc = new jsPDF();
+
+    // Add the custom font (Noto Sans Bengali) to the jsPDF instance using base64 encoding
+    doc.addFileToVFS("NotoSansBengali-Regular.ttf", NotoSansBengaliBase64);
+    doc.addFont("NotoSansBengali-Regular.ttf", "NotoSansBengali", "normal");
+
+    // Set the font before rendering the table
+    doc.setFont("NotoSansBengali");
+
+    // Prepare the table data
+    const tableData = data.map((item, index) => [
+      index + 1,
+      item.bishoy_biboron,
+      item.upodeshtar_Depto,
+      item.seniorSecretaryDepto,
+      item.atik_SecretaryLaw,
+      item.copy,
+      item.bishoyShironam,
+      item.preronerTarikh,
+      item.bistariTo,
+    ]);
+
+    // Add the table to the document with the appropriate header and body
+    doc.autoTable({
+      head: [
+        ['Serial', 'Subject / Description', 'Advisor Department', 'Senior Secretary Department', 'Additional Secretary (Law)', 'Copy', 'Subject Title', 'Date of Dispatch', 'Details']
+      ],
+      body: tableData,
+      // Set the font size for the table (optional)
+      theme: 'grid',
+      headStyles: { fontSize: 10 }, // Set the font size for header
+      bodyStyles: { fontSize: 10 }, // Set the font size for body text
+    });
+
+    // Save the PDF
+    doc.save('compose_data.pdf');
+  };
+  // Search handler
+  // const handleSearch = (event) => {
+  //   const query = event.target.value;
+  //   console.log("Searching for:", query);
+  //   // Implement search logic here if needed (e.g., filter `data` based on the search)
+  // };
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  if (error) {
+    return <div>Error: {error}</div>;
+  }
+
   return (
     <>
       <Sidebar />
-    <Navbar />
-      <div>
-      <div className=" p-6 ml-72">
-      <h1 className="text-3xl font-bold  mb-6">{t("Easy Diary Dashboard")}</h1>
-      <h1 className="text-3xl font-bold  mb-6">{name && <p><strong>Name:</strong> {name}</p>}</h1>
+      <Navbar pageTitle="Easy Diary Dashboard " /> {/* Passing the title here */}
+
+      <div className="grow ml-16 md:ml-64 lg:h-screen bg-gray-200 text-gray-900">
       
-      <div className="grid grid-cols-4 gap-6">
-        {/* Card 1 */}
-        <div className="bg-blue-500 text-white p-6 rounded-lg shadow-md">
-          <div className="flex items-center justify-between">
-            <i className="fas fa-paper-plane text-3xl"></i>
-            <span className="text-xl">40 </span>
+
+        {/* Dashboard Overview (Cards) */}
+        <div className="gap-4 mb-6 px-4">
+
+
+          <h2 className="text-3xl font-extrabold mb-4 text-left text-gray-800 drop-shadow-sm">
+            {/* Easy Diary Dashboard */}
+          </h2>
+
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 px-4 pt-8">
+            {/* Card 1 */}
+            <div className="bg-gradient-to-r from-blue-400 to-blue-600 text-white shadow-lg hover:shadow-xl transition-transform transform hover:scale-105 rounded-lg p-6">
+              <div className="flex items-center justify-between">
+                <div className="text-4xl">{<IoIosSend />}</div>
+                <div className="text-right">
+                  <p className="text-lg font-semibold">প্রেরিত</p>
+                  <p className="text-2xl font-bold">40</p>
+                </div>
+              </div>
+            </div>
+            {/* Card 2 */}
+            <div className="bg-gradient-to-r from-green-400 to-green-600 text-white shadow-lg hover:shadow-xl transition-transform transform hover:scale-105 rounded-lg p-6">
+              <div className="flex items-center justify-between">
+                <div className="text-4xl">{<MdCallReceived />}</div>
+                <div className="text-right">
+                  <p className="text-lg font-semibold">গৃহীত</p>
+                  <p className="text-2xl font-bold">120</p>
+                </div>
+              </div>
+            </div>
+            {/* Card 3 */}
+            <div className="bg-gradient-to-r from-yellow-400 to-yellow-600 text-white shadow-lg hover:shadow-xl transition-transform transform hover:scale-105 rounded-lg p-6">
+              <div className="flex items-center justify-between">
+                <div className="text-4xl">{<MdOutlinePendingActions />}</div>
+                <div className="text-right">
+                  <p className="text-lg font-semibold">অমীমাংসিত</p>
+                  <p className="text-2xl font-bold">30</p>
+                </div>
+              </div>
+            </div>
+            {/* Card 4 */}
+            <div className="bg-gradient-to-r from-purple-400 to-purple-600 text-white shadow-lg hover:shadow-xl transition-transform transform hover:scale-105 rounded-lg p-6">
+              <div className="flex items-center justify-between">
+                <div className="text-4xl">{<GrCompliance />}</div>
+                <div className="text-right">
+                  <p className="text-lg font-semibold">সম্পন্ন</p>
+                  <p className="text-2xl font-bold">11</p>
+                </div>
+              </div>
+            </div>
           </div>
-          <p className="mt-2 text-center font-bold">{t("Send")}</p>
+        </div>
+
+
+
+        <div className="px-4 h-full flex flex-col">
+          <h2 className="text-3xl font-extrabold mb-4 text-left text-gray-800 drop-shadow-sm">
+            Diary Records
+          </h2>
+
+          {/* searchbar */}
+          <div className="flex  px-0 mb-4 border-l w-full">
+            {/* Search Bar */}
+
+            <div className="flex items-center flex-grow">
+              <label className="input input-bordered flex items-center gap-4 w-full">
+                <input
+                  type="text"
+                  placeholder="Search your letters..."
+                  onChange={handleSearch}
+                  value={searchQuery}
+
+                  className="input input-bordered w-full"
+                />
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 16 16"
+                  fill="currentColor"
+                  className="h-4 w-4 opacity-70"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M9.965 11.026a5 5 0 1 1 1.06-1.06l2.755 2.754a.75.75 0 1 1-1.06 1.06l-2.755-2.754ZM10.5 7a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0Z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              </label>
+            </div>
           
-        </div>
-
-        {/* Card 2 */}
-        <div className="bg-green-500 text-white p-6 rounded-lg shadow-md">
-          <div className="flex items-center justify-between">
-            <i className="fas fa-arrow-down text-3xl"></i>
-            <span className="text-xl">120</span>
+            {/* Download PDF Button */}
+            <button
+              onClick={handleDownloadPDF}
+              className="btn bg-green-700 text-white hover:text-green-700 ml-4"
+            >
+              Download PDF
+            </button>
           </div>
-          <p className="mt-2 text-center font-bold">{t("Accepted")}</p>
-        </div>
 
-        {/* Card 3 */}
-        <div className="bg-yellow-500 text-white p-6 rounded-lg shadow-md">
-          <div className="flex items-center justify-between">
-            <i className="fas fa-camera text-3xl"></i>
-            <span className="text-xl">30</span>
-          </div>
-          <p className="mt-2 text-center font-bold">{t("Unresolved")}</p>
-        </div>
 
-        {/* Card 4 */}
-        <div className="bg-purple-500 text-white p-6 rounded-lg shadow-md">
-          <div className="flex items-center justify-between">
-            <i className="fas fa-check-circle text-3xl"></i>
-            <span className="text-xl">11</span>
-          </div>
-          <p className="mt-2 text-center font-bold">{t("Completed")}</p>
-        </div>
-      </div>
-    </div>
-      <div className=" p-4 ml-72 overflow-scroll">
-      
-        <div className="flex items-center justify-between">
-          
-        <h1 className="text-2xl font-bold mb-4">{t("dashboard")}</h1>
-        <button
-            className="btn mb-4"
-            onClick={downloadExcel} // Attach download function
-          >
-            Excel Download
-          </button>
-        </div>
-        {/* Table to display entries */}
-        {entries.length === 0 ? (
-          <p>এখনো কোন এন্ট্রি নেই।</p>
-        ) : (
-          <div>
-            <table className=" border-collapse table-auto border-2">
+          {/* Table Wrapper */}
+          <div className="flex-grow  min-h-[60vh] overflow-y-auto shadow-md rounded-md bg-white">
+            <table className="table-auto w-full border-collapse">
               <thead>
-                <tr className="bg-gray-100">
-                  <th className="border px-4 py-2">#</th>
-                  <th className="border px-4 py-2">{t("topicDescription")}</th>
-                  <th className="border px-4 py-2">{t("advisorDepartment")}</th>
-                  <th className="border px-4 py-2">
-                    {t("seniorSecretaryDepartment")}
-                  </th>
-                  <th className="border px-4 py-2">
-                    {t("additionalSecretaryLawSubsection")}
-                  </th>
-                  <th className="border px-4 py-2">
-                    {t("jointSecretaryLawBranch")}
-                  </th>
-                  <th className="border px-4 py-2">
-                    {t("additionalSecretaryDisciplineSubsection")}
-                  </th>
-                  <th className="border px-4 py-2">
-                    {t("jointSecretaryDisciplineBranch")}
-                  </th>
-                  <th className="border px-4 py-2">{t("lawSections")}</th>
-                  <th className="border px-4 py-2">
-                    {t("disciplineSections")}
-                  </th>
-                  <th className="border px-4 py-2">
-                    {t("recommendationComments")}
-                  </th>
-                  <th className="border px-4 py-2">{t("diaryNumber")}</th>
-                  <th className="border px-4 py-2">
-                    {t("internalDepartment")}
-                  </th>
-                  <th className="border px-4 py-2">
-                    {t("externalDepartment")}
-                  </th>
-                  <th className="border px-4 py-2">{t("signatureSeal")}</th>
-                  <th className="border px-4 py-2">{t("action")}</th>
-                </tr>
+                <tr>
+                  <th className="px-4 py-2 border">ক্রমিক</th>
+                  <th className="px-4 py-2 border">বিষয়/বিবরণ</th>
+                  <th className="px-4 py-2 border">উপদেষ্টার দপ্তর</th>
+                  <th className="px-4 py-2 border">সিনিয়র সচিবের দপ্তর</th>
+                  <th className="px-4 py-2 border">অতিঃ সচিব (আইন)অনুবিভাগ</th>
+                  <th className="px-4 py-2 border">যুগ্ন সচিব (আইন)অধিশাখা</th>
+                  <th className="px-4 py-2 border">অতিঃ সচিব (শৃংখলা)অনুবিভাগ</th>
+                  <th className="px-4 py-2 border">যুগ্ন সচিব (শৃংখলা)অধিশাখা</th>
+                  <th className="px-4 py-2 border">আইন শাখাসমূহ</th>
+                  <th className="px-4 py-2 border">শৃংখলা শাখাসমূহ</th>
+                  <th className="px-4 py-2 border">সুপারিশ/মন্তব্য</th>
+                  <th className="px-4 py-2 border">ডায়রি নং</th>
+                  <th className="px-4 py-2 border">বিবিধ/অভ্যন্তরীণ দপ্তর</th>
+                  <th className="px-4 py-2 border">বিবিধ/বহিস্থ দপ্তর</th>
+                  <th className="px-4 py-2 border">সাক্ষর/সিল</th>
+                  <th className="px-4 py-2 border">Status</th>
+
+                  <th className="px-4 py-2 border">Approve By</th>
+
+                  <th className="px-4 py-2 border">Complete By</th>
+
+                  {isJointSecretary && (
+              <th className="px-4 py-2 border">Action</th>
+            )}                </tr>
               </thead>
               <tbody>
-                {entries.map((entry, index) => (
-                  <tr key={index} className="border-b">
-                    <td className="border px-4 py-2">{index + 1}</td>
-                    <td className="border px-4 py-2">
-                      {entry.subjectDescription}
+
+                {filteredData.map((item, index) => (
+                  <tr key={item.id}>
+                    <td className="px-4 py-2 border">{index + 1}</td>
+                    <td className="px-4 py-2 border">{item.bishoy_biboron || "-"}</td>
+                    <td className="px-4 py-2 border">{item.upodeshtar_depto || "-"}</td>
+                    <td className="px-4 py-2 border">{item.senior_secretary_depto || "-"}</td>
+                    <td className="px-4 py-2 border">{item.atik_secretary_law || "-"}</td>
+                    <td className="px-4 py-2 border">{item.anu_vibhag || "-"}</td>
+                    <td className="px-4 py-2 border">{item.atik_secretary_discipline || "-"}</td>
+                    <td className="px-4 py-2 border">{item.anu_vibhag_discipline || "-"}</td>
+
+                    {/* <td className="px-4 py-2 border">{item.law_shakha || "-"}</td> */}
+                    <td className="px-4 py-2 border">
+                      {item.law_shakha && item.law_shakha_number
+                        ? `${item.law_shakha} (${convertToBengaliNumber(item.law_shakha_number)})`
+                        : item.law_shakha || item.law_shakha_number || "-"
+                      }
                     </td>
-                    <td className="border px-4 py-2">
-                      {entry.advisorDepartment}
+
+                    <td className="px-4 py-2 border">
+                      {item.discipline_shakha && item.discipline_shakha_number
+                        ? `${item.discipline_shakha} (${convertToBengaliNumber(item.discipline_shakha_number)})`
+                        : item.discipline_shakha || item.discipline_shakha_number || "-"
+                      }
                     </td>
-                    <td className="border px-4 py-2">
-                      {entry.seniorSecretaryDepartment}
-                    </td>
-                    <td className="border px-4 py-2">
-                      {entry.additionalSecretaryLawSubsection}
-                    </td>
-                    <td className="border px-4 py-2">
-                      {entry.jointSecretaryLawBranch}
-                    </td>
-                    <td className="border px-4 py-2">
-                      {entry.additionalSecretaryDisciplineSubsection}
-                    </td>
-                    <td className="border px-4 py-2">
-                      {entry.jointSecretaryDisciplineBranch}
-                    </td>
-                    <td className="border px-4 py-2">{entry.lawSections}</td>
-                    <td className="border px-4 py-2">
-                      {entry.disciplineSections}
-                    </td>
-                    <td className="border px-4 py-2">
-                      {entry.recommendationComments}
-                    </td>
-                    <td className="border px-4 py-2">{entry.diaryNumber}</td>
-                    <td className="border px-4 py-2">
-                      {entry.internalDepartment}
-                    </td>
-                    <td className="border px-4 py-2">
-                      {entry.externalDepartment}
-                    </td>
-                    <td className="border px-4 py-2">{entry.signatureSeal}</td>
-                    <td className="border px-4 py-2 flex">
-                      <button
-                        className="bg-blue-500 text-white px-4 py-2 rounded-md mr-2"
-                        onClick={() => {
-                          setEditingIndex(index);
-                          setEditData(entry); // Fill form with the current entry data
-                        }}
-                      >
-                        Edit
-                      </button>
-                      <button
-                        className="bg-red-500 text-white px-4 py-2 rounded-md"
-                        onClick={() => deleteEntry(index)}
-                      >
-                        Delete
-                      </button>
-                    </td>
+                    <td className="px-4 py-2 border">{item.suparish_comment || "-"}</td>
+                    <td className="px-4 py-2 border">{item.diary_no || "-"}</td>
+                    <td className="px-4 py-2 border">{item.internal_depto || "-"}</td>
+                    <td className="px-4 py-2 border">{item.external_depto || "-"}</td>
+                    <td className="px-4 py-2 border">{item.signature_seal || "-"}</td>
+                    <td className="px-4 py-2 border">{item.status || "-"}</td>
+
+                    <td className="px-4 py-2 border">{item.approved_by || "-"}</td>
+                    <td className="px-4 py-2 border">{item.complete_by || "-"}</td>
+                    <td className="px-4 py-2 border lg:flex gap-5">
+  {/* Check if user is Joint Secretary before showing the buttons */}
+  {isJointSecretary && (
+    <>
+      <button
+        onClick={() => handleDelete(item.id)}
+        className="btn bg-red-500 text-white hover:text-red-500"
+      >
+        Delete
+      </button>
+      <button
+        onClick={() => handleEdit(item.id)}
+        className="btn bg-green-700 text-white hover:text-green-700"
+      >
+        Edit
+      </button>
+    </>
+  )}
+</td>
+
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
-        )}
 
-        {/* Modal for editing entry */}
-        {editingIndex !== null && (
+
+        </div>
+    {/* Modal for editing entry */}
+    {editingIndex !== null && (
           // Modal Overlay
           <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
             <div className="bg-white p-6 rounded-lg shadow-lg w-10/12 h-[90%] overflow-y-auto">
@@ -489,9 +686,8 @@ const Dashboard = () => {
             </div>
           </div>
         )}
+
       </div>
-      </div>
-      
     </>
   );
 };

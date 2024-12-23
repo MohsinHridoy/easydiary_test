@@ -1,14 +1,11 @@
-import { useState, useEffect, useContext } from "react";
+import { useState, useEffect } from "react";
 import { IoSearch } from "react-icons/io5";
 import Sidebar from "../Navbar/Sidebar";
 import Navbar from "../Navbar/Navbar";
 import { supabase } from "../../firebase/supabaseClient";
-import { AuthContext } from "../../providers/AuthProvider";
 
 const Notification = () => {
   const [emails, setEmails] = useState([]);
-  const { user } = useContext(AuthContext);  // Getting user from AuthContext
-
   const [filteredEmails, setFilteredEmails] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
@@ -16,9 +13,8 @@ const Notification = () => {
   const [showPopup, setShowPopup] = useState(false);
   const [popupData, setPopupData] = useState(null);
 
-    // Assuming 'userLawShakha' and 'userDisciplineShakha' come from the user object
-    const userLawShakha = user?.designation === "Low Branch" ? user?.branch : null;
-    const userDisciplineShakha = user?.designation === "Discipline Branch" ? user?.branch : null;
+  const userLawShakha = 2; // Dummy Law Shakha Number
+  const userDisciplineShakha = null; // Dummy Discipline Shakha Number
 
   // Fetch emails from the Supabase "compose" table
   useEffect(() => {
@@ -84,7 +80,7 @@ const Notification = () => {
       // Update the status in the database
       const { error } = await supabase
         .from("compose")
-        .update({ status: "received", approved_by: user?.name }) // Add 'approved_by' field to the update query
+        .update({ status: "received" })
         .eq("id", email.id);
 
       if (error) throw new Error(error.message);
@@ -118,7 +114,7 @@ const Notification = () => {
   return (
     <>
       <Sidebar />
-      <Navbar pageTitle="Notifications" /> {/* Passing the title here */}
+      <Navbar />
       <div className="flex ml-64">
         <div className="flex-1 bg-gray-100">
           <div className="p-6">
@@ -129,7 +125,7 @@ const Notification = () => {
                   type="text"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  placeholder="Search tasks"
+                  placeholder="Search emails"
                   className="border px-4 py-2 rounded-lg w-96"
                 />
                 <IoSearch size={20} className="ml-2 text-gray-500" />

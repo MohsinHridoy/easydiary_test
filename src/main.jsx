@@ -7,6 +7,14 @@ import ErrorPage from "./Components/ErrorPage/ErrorPage";
 import LogIn from "./Components/Home/LogIn";
 import Registration from "./Components/Registration/Registration";
 import Dashboard from "./Components/Dashboard/Dashboard";
+import Received from "./Components/ReceivePage/received.jsx";
+import Complete from "./Components/complete/complete.jsx";
+import Pending from "./Components/pending/pending.jsx";
+
+
+import Sent from "./Components/Sent/sent.jsx";
+
+
 import ForgotPassword from "./ForgotPassword/ForgotPassword";
 import ComposePage from "./Components/compose/compose";
 import Notification from "./Components/Notification/Notification";
@@ -42,6 +50,38 @@ const App = () => {
           element: (
             <ProtectedRoute>
               <ComposePage />
+            </ProtectedRoute>
+          ),
+        },
+        {
+          path: "/sent",
+          element: (
+            <ProtectedRoute>
+              <Sent />
+            </ProtectedRoute>
+          ),
+        },
+        {
+          path: "/pending",
+          element: (
+            <ProtectedRoute>
+              <Pending />
+            </ProtectedRoute>
+          ),
+        },
+        {
+          path: "/complete",
+          element: (
+            <ProtectedRoute>
+              <Complete />
+            </ProtectedRoute>
+          ),
+        },
+        {
+          path: "/receive",
+          element: (
+            <ProtectedRoute>
+              <Received />
             </ProtectedRoute>
           ),
         },

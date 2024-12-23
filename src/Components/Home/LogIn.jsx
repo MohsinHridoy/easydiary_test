@@ -20,7 +20,7 @@ const LogIn = () => {
   const handleLogin = (event) => {
     event.preventDefault();
     setLoading(true);
-
+  
     if (!email || !password) {
       Swal.fire({
         icon: "warning",
@@ -30,7 +30,7 @@ const LogIn = () => {
       setLoading(false);
       return;
     }
-
+  
     if (!validateEmail(email)) {
       Swal.fire({
         icon: "warning",
@@ -40,14 +40,18 @@ const LogIn = () => {
       setLoading(false);
       return;
     }
-
+  
     signIn(email, password)
       .then((result) => {
+        // Fetch the user data (this comes from Firestore)
+        const userData = result.userData; // Get the userData returned from signIn function
+  
         if (keepLoggedIn) {
+          // Save the JWT token and user data in localStorage
           localStorage.setItem("jwt_token", result.user?.accessToken);
-          localStorage.setItem("user", JSON.stringify(result.user));
+          localStorage.setItem("user", JSON.stringify({ ...result.user, ...userData }));
         }
-
+  
         Swal.fire({
           position: "top-end",
           icon: "success",
@@ -67,6 +71,7 @@ const LogIn = () => {
       })
       .finally(() => setLoading(false));
   };
+  
 
   return (
     <div className="hero bg-base-200 min-h-screen ">

@@ -24,12 +24,18 @@ const Registration = () => {
   };
 
   const onSubmit = (data) => {
-    console.log(data);
+    console.log(data); // Debugging log
     setLoading(true);
   
-    createUser(data.email, data.password)
+    // Pass additional data (name, designation, branch) to createUser
+    createUser(data.email, data.password, {
+      name: data.name,
+      designation: data.designation,
+      branch: data.branch,
+    })
       .then((result) => {
-        if (result && result.user) { // user প্রপার্টি চেক করুন
+        console.log("Registration Result:", result); // Debugging log
+        if (result && result.user) {
           const loggedUser = result.user;
           console.log("User registered:", loggedUser);
   
@@ -45,8 +51,8 @@ const Registration = () => {
               name: data.name,
               email: data.email,
               designation: data.designation,
-              branch: data.branch
-            }
+              branch: data.branch,
+            },
           });
         } else {
           throw new Error("User registration failed. No user information returned.");
@@ -64,7 +70,8 @@ const Registration = () => {
         setLoading(false);
       });
   };
-
+  
+  
   return (
     <div className="hero bg-base-200 min-h-screen">
       <div className="hero-content flex-col lg:flex-row justify-around gap-10">
